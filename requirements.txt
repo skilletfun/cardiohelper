@@ -1,0 +1,10 @@
+scipy
+numpy
+opencv-python
+Pillow
+pytesseract
+sklearn
+six
+django
+djangorestframework
+django-cors-headers

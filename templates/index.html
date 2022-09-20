@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC>
+{% load static %}
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>CardioHelper</title>
+        <link rel="shortcut icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+        <style>
+            body {
+                background-image: url("{% static 'src/bg.png' %}");
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+                background-size: 100% 100%;
+            }
+
+            .content {
+                margin-left: 80px;
+                margin-top: 80px;
+            }
+
+            h1 {
+                margin: 20px;
+                color: #333333;
+                font-weight: bold;
+                font-family: arial;
+                font-size: 32px;
+            }
+
+            h2 {
+                margin-left: 20px;
+                color: #333333;
+                font-weight: bold;
+                font-family: arial;
+                font-size: 18px;
+            }
+
+            input[type="file"] {
+                margin-left: 20px;
+                color: rgba(0,0,0,0);
+                opacity: 0;
+                z: -1;
+            }
+
+            .button {
+                margin-top: 50px;
+                margin-left: 20px;
+                height: 170px;
+                width: 300px;
+                cursor: pointer;
+                border-radius: 30px;
+                background-color: white;
+                color: #333333;
+                border: 1px solid #797979;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            p {
+                font-size: 20px;
+                text-align: center;
+                font-family: arial;
+                font-weight: bold;
+            }
+            footer {
+                position: absolute;
+                width: 95%;
+                bottom: 0;
+            }
+
+            .creds {
+                text-align: right;
+                margin-right: 20px;
+                color: #333333;
+            }
+
+            .link {
+                width: 32px;
+                height: 32px;
+                margin-right: 13px;
+                margin-top: -10px;
+            }
+
+            .logo {
+                position: absolute;
+                top: 10;
+                height: 700px;
+                left: 750;
+            }
+
+            @keyframes animate {
+                50% {transform: scale(1.1, 1.1);}
+            }
+        </style>
+    </head>
+    <body>
+        <div class="content">
+            <h1>CardioHelper</h1>
+            <h2>
+                Upload an image and get the result of prediction.
+            </h2>
+            <h2>
+                If you have problems with your heart,<br>with 75% we tell you about it!
+            </h2>
+            <div>
+                <label id="primary_btn" class="button" for="inp">
+                    <p id="primary_p">Choose image...</p>
+                </label>
+                <input type="file" id="inp" accept="image/*">
+            </div>
+            <div>
+                <img src="{% static 'src/ecg.png' %}" class="logo">
+            </div>
+            <img id="main_img" hidden>
+        </div>
+        <footer>
+            <p class="creds">
+                © 2022, skilletfun
+            </p>
+            <p class="creds">
+                <span>
+                    <img class="link" src="{% static 'src/email.png' %}" onclick="window.open('mailto:skilletfun.laptew.sergey@yandex.ru')">
+                </span>
+                <span>
+                    <img class="link" src="{% static 'src/telegram.png' %}" onclick="window.open('tg://resolve?domain=skilletfun')">
+                </span>
+                <span>
+                    <img class="link" src="{% static 'src/github.png' %}" onclick="window.open('https://github.com/skilletfun/cardiohelper')">
+                </span>
+            </p>
+        </footer>
+    </body>
+    <script>
+        function predict() {
+            primary_btn.style.animation = "animate 2s alternate infinite";
+            primary_p.innerHTML = "Loading...";
+            var data = document.getElementById("main_img").src.replace("data:image/png;base64,", "").replace("data:image/jpeg;base64,", "");
+            var request = new XMLHttpRequest();
+            request.open('POST', 'http://127.0.0.1:8000/api/v1/predict', true);
+            request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            request.onload = function () {
+                console.log(this.responseText);
+                primary_p.innerHTML = "Result: " + JSON.parse(this.responseText).prediction;
+                primary_btn.style.animation = "";
+            };
+            request.send('image='+data);
+        };
+
+        function readFile() {
+            if (!this.files || !this.files[0]) return;
+            const FR = new FileReader();
+            FR.addEventListener("load", function(evt) {
+                document.querySelector("#main_img").src = evt.target.result;
+                predict();
+            });
+            FR.readAsDataURL(this.files[0]);
+        }
+
+        document.querySelector("#inp").addEventListener("change", readFile);
+    </script>
+</html>
